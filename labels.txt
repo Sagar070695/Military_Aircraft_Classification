@@ -1,0 +1,5 @@
+0 F4 Fighter
+1 F16 Fighter
+2 Mi26 Helipcopter
+3 Mirage Fighter
+4 Rafale Fighter
