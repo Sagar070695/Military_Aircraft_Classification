@@ -1,6 +1,8 @@
 import streamlit as st
 import tensorflow as tf
 import numpy as np
+import cv2
+import matplotlib.pyplot as plt
 from PIL import Image
 
 # Load the model
@@ -20,12 +22,14 @@ uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png
 
 # Function to preprocess the image
 def preprocess_image(image):
-    img = image.resize((224, 224))  # Resize to match the model input
-    img_array = np.array(img) / 255.0  # Normalize
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-    return img_array
+    img = np.array(image)  # Convert to NumPy array
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # Ensure correct colour format
+    img = cv2.resize(img, (224, 224))  # Resize to model input size
+    img = img / 255.0  # Normalise
+    img = np.expand_dims(img, axis=0)  # Add batch dimension
+    return img
 
-# Prediction
+# Prediction and Visualisation
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Image", use_column_width=True)
@@ -34,7 +38,14 @@ if uploaded_file is not None:
     processed_image = preprocess_image(image)
     predictions = model.predict(processed_image)
     predicted_label = labels[np.argmax(predictions)]
+    confidence_scores = predictions[0]
 
     # Display result
     st.subheader(f"Prediction: {predicted_label}")
-    st.bar_chart(predictions[0])
+
+    # Visualise probabilities using matplotlib
+    fig, ax = plt.subplots()
+    ax.barh(labels, confidence_scores, color="blue")
+    ax.set_xlabel("Confidence")
+    ax.set_title("Prediction Probabilities")
+    st.pyplot(fig)
